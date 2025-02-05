@@ -55,15 +55,24 @@ router.get("/:short", async (req, res) => {
   res.json({ success: true });
 });
 
-router.get("/:short/stats", async (req, res) => {
+router.get("/:short/stats", [authMiddleware], async (req, res) => {
   const { short } = req.params;
-  const data = await prisma.url.findFirstOrThrow({
-    where: { short },
-    select: { link: true, short: true, clicks: true, createdAt: true },
+  const data = await prisma.url.findFirst({
+    where: { short, userId: req.user.id },
+    select: {
+      link: true,
+      short: true,
+      clicks: true,
+      createdAt: true,
+      expiresAt: true,
+    },
   });
-  if (!data) return res.redirect("/");
+  if (!data)
+    return res.json({
+      message: "Short URL not found or unauthorized",
+      success: false,
+    });
   res.json({ data, success: true });
 });
 
-// /stats/:shortUrl
 module.exports = router;

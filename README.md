@@ -59,10 +59,10 @@ A simple and efficient URL shortener built with Node.js, Express, and MongoDB. I
 - `GET /me` → Get logged-in user info (Requires authentication)  
 
 ### **URL Shortening**
-- `POST /short` → Shorten a URL (Requires authentication)  
+- `POST /short` → Shorten a URL (Requires authentication)
 - `GET /:short` → Redirect to the original URL  
-- `GET /:short/stats` → Redirect to the original URL  
-- `GET /:short/qr` → Redirect to the original URL  
+- `GET /:short/stats` → Get statistics for a shortened URL (Requires authentication) 
+- `GET /:short/qr` → Generate and return a QR code for the shortened URL (Requires authentication)
 
 ---
 

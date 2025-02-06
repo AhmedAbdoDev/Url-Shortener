@@ -16,13 +16,12 @@ A simple and efficient URL shortener built with Node.js, Express, and MongoDB. I
 
 - **Node.js** - Backend runtime environment
 - **Express.js** - Web framework for Node.js
-- **MongoDB** - NoSQL database for storing URLs
-- **Mongoose** - ODM for MongoDB
+- **Prisma** - Modern database ORM for managing MongoDB
 - **jsonwebtoken (JWT)** - Authentication mechanism
 - **bcryptjs** - Password hashing for security
 - **express-rate-limit** - API rate limiting
 - **nanoid** - Generating short unique identifiers
-
+- **qrcode** - Generating QR codes for shortened URLs
 ---
 
 ## 🚀 Installation & Setup
@@ -61,7 +60,9 @@ A simple and efficient URL shortener built with Node.js, Express, and MongoDB. I
 
 ### **URL Shortening**
 - `POST /short` → Shorten a URL (Requires authentication)  
-- `GET /:shortId` → Redirect to the original URL  
+- `GET /:short` → Redirect to the original URL  
+- `GET /:short/stats` → Redirect to the original URL  
+- `GET /:short/qr` → Redirect to the original URL  
 
 ---
 
@@ -71,7 +72,7 @@ A simple and efficient URL shortener built with Node.js, Express, and MongoDB. I
 - [ ] Implement link analytics (views, unique clicks, etc.)  
 - [ ] Add support for custom short URLs  
 - [ ] Enhance UI with a frontend (React/Vue)  
-- [ ] QR Code generation for shortened links
+- [x] QR Code generation for shortened links
 
 ---
 

@@ -64,7 +64,7 @@ router.get("/:short/qr", [authMiddleware], async (req, res) => {
   try {
     const { short } = req.params;
     const data = await prisma.url.findFirst({
-      where: { short },
+      where: { short, userId: req.user.id },
     });
     if (!data)
       return res.json({

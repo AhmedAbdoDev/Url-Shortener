@@ -54,22 +54,22 @@ A simple and efficient URL shortener built with Node.js, Express, and MongoDB. I
 ## 🔥 API Endpoints
 
 ### **User Authentication**
-- `POST /register` → Register a new user  
-- `POST /login` → Login user and get a token  
-- `GET /me` → Get logged-in user info (Requires authentication)  
+- `POST /api/register` → Register a new user  
+- `POST /api/login` → Login user and get a token  
+- `GET /api/me` → Get logged-in user info (Requires authentication)  
 
 ### **URL Shortening**
-- `POST /short` → Shorten a URL (Requires authentication)
-- `GET /:short` → Redirect to the original URL  
-- `GET /:short/stats` → Get statistics for a shortened URL (Requires authentication) 
-- `GET /:short/qr` → Generate and return a QR code for the shortened URL (Requires authentication)
+- `POST /api/short` → Shorten a URL (Requires authentication)
+- `GET /api/:short` → Redirect to the original URL  
+- `GET /api/:short/stats` → Get statistics for a shortened URL (Requires authentication) 
+- `GET /api/:short/qr` → Generate and return a QR code for the shortened URL (Requires authentication)
 
 ---
 
 ## 📌 To-Do List
 
 - [ ] Add an admin panel for managing links  
-- [ ] Implement link analytics (views, unique clicks, etc.)  
+- [x] Implement link analytics (views, unique clicks, etc.)  
 - [ ] Add support for custom short URLs  
 - [ ] Enhance UI with a frontend (React/Vue)  
 - [x] QR Code generation for shortened links

@@ -36,7 +36,8 @@ router.get("/:short", async (req, res) => {
   const data = await prisma.url.findFirst({
     where: { short },
   });
-  if (!data) return res.redirect("/");
+  if (!data || (data.expiresAt && new Date(data.expiresAt) <= new Date()))
+    return res.redirect("/");
   let ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip;
   ip = ip.replace(/^::ffff:/, "");
   const geo = await getLocation(ip);
@@ -106,6 +107,7 @@ router.get("/:short/stats", [authMiddleware], async (req, res) => {
     );
   res.json({
     totalClicks: data.clicks,
+    expiresAt: data.expiresAt,
     createdAt: data.createdAt,
     lastClickAt: data.updatedAt,
     countryStats,

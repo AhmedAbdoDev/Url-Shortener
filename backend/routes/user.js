@@ -65,8 +65,21 @@ router.get("/me", [authMiddleware], async (req, res) => {
         short: true,
         clicks: true,
         createdAt: true,
+        visits: true,
       },
     });
+    links = links.map((link) => ({
+      ...link,
+      visits: link.visits.map(
+        ({ userAgent, referer, country, createdAt, updatedAt }) => ({
+          userAgent,
+          referer,
+          country,
+          createdAt,
+          updatedAt,
+        })
+      ),
+    }));
     user.links = links;
   }
   res.json(user);

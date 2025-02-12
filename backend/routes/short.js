@@ -4,6 +4,8 @@ const router = express.Router();
 const { nanoid } = require("nanoid");
 const authMiddleware = require("../middlewares/authMiddleware");
 const QRCode = require("qrcode");
+const UAParser = require("ua-parser-js");
+const { getReferrerName, getLocation } = require("../functions");
 router.post("/short", [authMiddleware], async (req, res) => {
   const { link, expiresAt } = req.body;
   let expiresInDays = 0;
@@ -27,19 +29,37 @@ router.post("/short", [authMiddleware], async (req, res) => {
       expiresAt: true,
     },
   });
-  res.json(data);
+  res.json({ data, success: true });
 });
 router.get("/:short", async (req, res) => {
   const { short } = req.params;
-  const data = await prisma.url.findFirstOrThrow({
+  const data = await prisma.url.findFirst({
     where: { short },
   });
   if (!data) return res.redirect("/");
-  await prisma.url.update({
-    where: { id: data.id },
-    data: { clicks: data.clicks + 1 },
-  });
-  res.json({ success: true });
+  let ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip;
+  ip = ip.replace(/^::ffff:/, "");
+  const geo = await getLocation(ip);
+  const referrer = getReferrerName(req.headers.referer);
+  const country = geo?.country || "Unknown";
+  try {
+    await prisma.visit.create({
+      data: {
+        urlId: data.id,
+        country,
+        userAgent: req.headers["user-agent"],
+        referrer,
+      },
+    });
+    await prisma.url.update({
+      where: { id: data.id },
+      data: { clicks: data.clicks + 1 },
+    });
+    // res.json({ success: true });
+    res.redirect(data.link);
+  } catch (error) {
+    res.status(500).json({ error: error.message, success: false });
+  }
 });
 router.get("/:short/stats", [authMiddleware], async (req, res) => {
   const { short } = req.params;
@@ -51,6 +71,8 @@ router.get("/:short/stats", [authMiddleware], async (req, res) => {
       clicks: true,
       createdAt: true,
       expiresAt: true,
+      visits: true,
+      updatedAt: true,
     },
   });
   if (!data)
@@ -58,7 +80,41 @@ router.get("/:short/stats", [authMiddleware], async (req, res) => {
       message: "Short URL not found or unauthorized",
       success: false,
     });
-  res.json({ data, success: true });
+  const { countryStats, browserStats, osStats, deviceStats, referrerStats } =
+    data.visits.reduce(
+      (acc, visit) => {
+        const parser = new UAParser(visit.userAgent);
+        const country = visit.country;
+        const browser = parser.getBrowser().name;
+        const os = parser.getOS().name;
+        const device = parser.getDevice().type || "Desktop";
+        const referrer = visit.referrer || "Direct";
+        acc.countryStats[country] = (acc.countryStats[country] || 0) + 1;
+        acc.browserStats[browser] = (acc.browserStats[browser] || 0) + 1;
+        acc.osStats[os] = (acc.osStats[os] || 0) + 1;
+        acc.deviceStats[device] = (acc.deviceStats[device] || 0) + 1;
+        acc.referrerStats[referrer] = (acc.referrerStats[referrer] || 0) + 1;
+        return acc;
+      },
+      {
+        countryStats: {},
+        browserStats: {},
+        osStats: {},
+        deviceStats: {},
+        referrerStats: {},
+      }
+    );
+  res.json({
+    totalClicks: data.clicks,
+    createdAt: data.createdAt,
+    lastClickAt: data.updatedAt,
+    countryStats,
+    browserStats,
+    deviceStats,
+    osStats,
+    referrerStats,
+    success: true,
+  });
 });
 router.get("/:short/qr", [authMiddleware], async (req, res) => {
   try {
@@ -74,9 +130,9 @@ router.get("/:short/qr", [authMiddleware], async (req, res) => {
     const qrCode = await QRCode.toDataURL(
       `http://localhost:${process.env.PORT}/${data.short}`
     );
-    res.json({ qrCode });
+    res.json({ qrCode, success: true });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message, success: false });
   }
 });
 module.exports = router;

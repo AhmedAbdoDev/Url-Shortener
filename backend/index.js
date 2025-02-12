@@ -14,7 +14,6 @@ app.use(express.json());
 app.use(limiter);
 app.use(bodyParser.json());
 app.use(cors());
-
 const api = require("./routes");
 app.use("/api", api);
 

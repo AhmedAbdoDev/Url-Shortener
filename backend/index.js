@@ -1,7 +1,6 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-
 require("dotenv").config();
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
@@ -16,6 +15,5 @@ app.use(bodyParser.json());
 app.use(cors());
 const api = require("./routes");
 app.use("/api", api);
-
 const PORT = process.env.PORT;
 app.listen(PORT, () => console.log("app is running"));
